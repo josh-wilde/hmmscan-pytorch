@@ -52,14 +52,13 @@ state_dists <- state_params %>%
   summarise(prob_binom = sum(prob_binom_wt)) %>% 
   ungroup()
 
-# Figure saved as SVG 490x200 if not including Dose Form C
+# Figure saved as SVG 490x350
 state_dists %>% 
   mutate(dose_form_label = ifelse(str_detect(sequence_name, 'dfa'), 'Dose Form A', 
                                   ifelse(str_detect(sequence_name, 'dfb'), 'Dose Form B', 'Dose Form C'))) %>% 
   filter(((dose_form_label == 'Dose Form A') & (x < 125)) 
          | ((dose_form_label == 'Dose Form B') & (x < 60)) 
          | ((dose_form_label == 'Dose Form C') & (x < 30)) ) %>% 
-  #filter(dose_form_label != 'Dose Form C') %>% 
   ggplot(aes(x = x, y = prob_binom, fill = factor(state))) + 
   geom_area(alpha = 0.5, position = 'identity') + 
   facet_wrap(.~dose_form_label, ncol = 2, scales = 'free') +
@@ -137,7 +136,6 @@ trans_probs %>%
 # Extract the state params for the best model for each sequence_name that we want
 predictions_state_params <- best_inits %>% 
   filter(dir == 'use_case',
-         #str_detect(sequence_name, 'ex_iqr_outliers|ex_iqr_expedited'),
          str_detect(sequence_name, 'ex_iqr_outliers'),
          ae_type %in% c('serious', 'exp_no_admin')
   ) %>%
@@ -166,7 +164,6 @@ predictions_state_ordering <- predictions_state_params %>%
 # Pull in all of the prediction files
 predictions <- best_inits %>% 
   filter(dir == 'use_case',
-         #str_detect(sequence_name, 'ex_iqr_outliers|ex_iqr_expedited'),
          str_detect(sequence_name, 'ex_iqr_outliers'),
          ae_type %in% c('serious', 'exp_no_admin')
   ) %>% 
@@ -176,10 +173,7 @@ predictions <- best_inits %>%
   mutate(pred_fname = file.path(predictions_dirpath, dir, glue('{sequence_name}_{ae_type}_s{n_states}c{n_mix_comps}.csv'))) %>% 
   mutate(predictions = map(pred_fname, ~{read_csv(.) %>% mutate(lot_id = row_number())})) %>% 
   unnest(predictions) %>% 
-  #mutate(ae_rate = ifelse(ae_type == 'exp_no_admin_std', exp_no_admin_std, serious)) %>% 
   mutate(ae_rate = serious / lot_size_doses * 100000) %>% 
-  #select(-c(pred_fname, serious_std, exp_no_admin_std)) %>% 
-  #select(-c(pred_fname, serious_std)) %>% 
   select(-c(pred_fname, serious)) %>% 
   ungroup() %>% 
   left_join(predictions_state_ordering %>% rename(viterbi=state, viterbi_ordered=new_state))
@@ -190,9 +184,6 @@ predictions %>%
     sequence_name == 'dfa_by_date_ex_iqr_outliers' ~ '(a) Dose Form A',
     sequence_name == 'dfb_by_date_ex_iqr_outliers' ~ '(b) Dose Form B',
     sequence_name == 'dfc_by_date_ex_iqr_outliers' ~ '(c) Dose Form C',
-    sequence_name == 'dfa_by_date_ex_iqr_expedited' ~ '(d) Dose Form A\n(expedited reports)',
-    sequence_name == 'dfb_by_date_ex_iqr_expedited' ~ '(e) Dose Form B\n(expedited reports)',
-    sequence_name == 'dfc_by_date_ex_iqr_expedited' ~ '(f) Dose Form C\n(expedited reports)',
   )) %>% 
   ggplot(aes(x = lot_id, y = ae_rate, color = factor(viterbi_ordered))) +
   facet_wrap(.~dose_form_label, nrow = 2, ncol = 3, scales = 'free') + 

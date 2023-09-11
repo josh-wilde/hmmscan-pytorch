@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import torch
 
-# from hmmscan.Scanner import Scanner
 from hmmscan.DataLoader import ManualLoader
 from hmmscan.utils.load_data_utils import get_ae_path, load_data
 from hmmscan.scripts.scans.use_case import initialize_model
