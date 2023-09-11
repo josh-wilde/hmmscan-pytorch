@@ -3,7 +3,7 @@ library(glue)
 
 # Paths
 results_dirpath <- file.path(read_lines('shared-path.txt'), 'results')
-best_init_fpath <- file.path(results_dirpath, 'scans', 'use_case', 'best_initializations', 'by_date_ex_iqr.csv')
+best_init_fpath <- file.path(results_dirpath, 'scans', 'use_case', 'best_initializations', 'by_date_ex_iqr_lotsize.csv')
 predictions_dirpath <- file.path(results_dirpath, 'state_prediction')
 
 # Pull in data
@@ -63,22 +63,6 @@ state_dists %>%
   ggplot(aes(x = x, y = prob_binom, fill = factor(state))) + 
   geom_area(alpha = 0.5, position = 'identity') + 
   facet_wrap(.~dose_form_label, ncol = 2, scales = 'free') +
-  theme_bw(base_size = 9) +  
-  labs(x = 'Reported AE rate per 100k doses',
-       y = 'Probability Mass',
-       fill = 'Hidden\nState',
-       title = NULL # 'State-Specific Mixture Distributions' # 'Dose Form B'
-  )
-
-state_dists %>% 
-  mutate(dose_form_label = ifelse(str_detect(sequence_name, 'dfa'), 'Dose Form A', 
-                                  ifelse(str_detect(sequence_name, 'dfb'), 'Dose Form B', 'Dose Form C'))) %>% 
-  filter(((dose_form_label == 'Dose Form A') & (x < 100)) 
-         | ((dose_form_label == 'Dose Form B') & (x < 50)) 
-         | ((dose_form_label == 'Dose Form C') & (x < 30)) ) %>% 
-  filter(dose_form_label == 'Dose Form C') %>% 
-  ggplot(aes(x = x, y = prob_binom, fill = factor(state))) + 
-  geom_area(alpha = 0.5, position = 'identity') +
   theme_bw(base_size = 9) +  
   labs(x = 'Reported AE rate per 100k doses',
        y = 'Probability Mass',

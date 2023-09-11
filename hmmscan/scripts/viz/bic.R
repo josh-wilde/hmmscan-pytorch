@@ -5,7 +5,7 @@ library(scales)
 
 # Paths
 results_dirpath <- file.path(read_lines('shared-path.txt'), 'results')
-best_init_fpath <- file.path(results_dirpath, 'scans', 'use_case', 'best_initializations', 'by_date_ex_iqr.csv')
+best_init_fpath <- file.path(results_dirpath, 'scans', 'use_case', 'best_initializations', 'by_date_ex_iqr_lotsize.csv')
 
 # Pull in data
 best_inits <- read_csv(best_init_fpath)
