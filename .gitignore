@@ -5,6 +5,7 @@ error.err
 .DS_Store
 .Rhistory
 .vscode/
+**/__pycache__/
 
 # Pycharm
 .idea/
